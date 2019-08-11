@@ -9,9 +9,23 @@ fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
+static HELLO: &[u8] = b"Hello World!";
+
 #[no_mangle]    // Disable name mangling so that the function name is used
 pub extern "C" fn _start() -> ! {
     // extern "C" tells the compiler to use C calling convention
     // _start is just a name convention
+
+    // Cast 0xb8000 as a raw pointer.
+    let vga_buffer = 0xb8000 as *mut u8;
+
+    for (i, &byte) in HELLO.iter().enumerate() {
+        // Use unsafe because the raw pointer can't be proved safe.
+        unsafe {
+            *vga_buffer.offset(i as isize * 2) = byte;
+            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
+        }
+    }
+
     loop {}
 }
