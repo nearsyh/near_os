@@ -16,7 +16,18 @@ panic = "abort"
 bootloader = "0.6.4"
 volatile = "0.2.3" # Make the buffer write volatile to avoid bad optimization
 spin = "0.4.9"
+x86_64 = "0.7.0" # Send instructions to the isa-debug-exit port
+uart_16550 = "0.2.0" # Send output from kernel to host using serial port
 
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
+
+# Make test exitable
+[package.metadata.bootimage]
+test-args = [
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-serial", "stdio",     # Direct output from serial port to host stdio
+    "-display", "none"]     # Don't show qemu window while testing
+test-success-exit-code = 33 # (0x10 << 1) | 1
+test-timeout = 300          # (in seconds)

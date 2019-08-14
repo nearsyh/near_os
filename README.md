@@ -23,6 +23,20 @@ cargo bootimage
 
 The ```target``` part is for compiling for bare metal systems. Note that it is possible to compile by adding some arguments for the linter, but it is not recommended because it may still uses some features from the C runtime.
 
+# Run
+```bash
+cargo run
+```
+
+# Test
+```bash
+cargo xtest
+```
+
+Current we have two kinds of tests: unit tests and integration tests. Unit tests are test cases written in each rs files under src directory. Integration tests are those in tests directory.
+
+**Note**: Integration tests are run as separate executables.
+
 # Architecture
 ```json
 {
