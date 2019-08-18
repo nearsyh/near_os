@@ -18,7 +18,8 @@ use near_os::println;
 fn panic(info: &PanicInfo) -> ! {
     // the ! means never returning
     println!("{}", info);
-    loop {}
+
+    near_os::hlt_loop();
 }
 
 // Test Panic Handler
@@ -57,9 +58,19 @@ pub extern "C" fn _start() -> ! {
     // stack_overflow();
     // ===============================================
 
+    println!("Not Crash");
+
     // Only run while testing
     #[cfg(test)]
     test_main(); // This function is auto-generated
 
-    loop {}
+    // loop {
+        // ==============================================
+        // Used to trigger a dead lock
+        // use near_os::print;
+        // print!("-");
+        // ==============================================
+    // }
+
+    near_os::hlt_loop();
 }

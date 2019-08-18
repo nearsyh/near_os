@@ -21,8 +21,15 @@ pub mod gdt;
 pub fn init() {
     // Initialize the GDT
     gdt::init();
+
     // Initialize the IDT
     interrupts::init_idt();
+
+    // Initialize the PIC
+    unsafe {
+        interrupts::PICS.lock().initialize()
+    };
+    x86_64::instructions::interrupts::enable();
 }
 
 // Qemu Helper Functions
@@ -42,6 +49,13 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 
+// Avoid the loop {} consumes CPU
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 use core::panic::PanicInfo;
 
 // Test runner
@@ -58,7 +72,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
 
 /// Entry point for `cargo xtest`
@@ -69,7 +83,7 @@ pub extern "C" fn _start() -> ! {
     init();
 
     test_main();
-    loop {}
+    hlt_loop();
 }
 
 /// Panic Handler for `cargo xtest`
