@@ -8,10 +8,19 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+// Enable x86_interrupt calling convention
+#![feature(abi_x86_interrupt)]
+
 // Make print and serial_print available
 // pub makes the modules available from outside
 pub mod serial;
 pub mod vga_buffer;
+pub mod interrupts;
+
+pub fn init() {
+    // Initialize the IDT
+    interrupts::init_idt();
+}
 
 // Qemu Helper Functions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +62,9 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    // Initialize the IDT before running tests.
+    init();
+
     test_main();
     loop {}
 }
