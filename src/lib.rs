@@ -16,8 +16,11 @@
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
+pub mod gdt;
 
 pub fn init() {
+    // Initialize the GDT
+    gdt::init();
     // Initialize the IDT
     interrupts::init_idt();
 }

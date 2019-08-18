@@ -37,8 +37,25 @@ pub extern "C" fn _start() -> ! {
     // Initialize our OS
     near_os::init();
 
+    // ===============================================
     // Trigger a breakpoint exception
-    x86_64::instructions::interrupts::int3();
+    // x86_64::instructions::interrupts::int3();
+    // ===============================================
+
+    // ===============================================
+    // Trigger a page fault
+    // unsafe {
+        // *(0xdeadbeef as *mut u64) = 42;
+    // }
+    // ===============================================
+
+    // ===============================================
+    // Trigger a stack overflow
+    // fn stack_overflow() {
+        // stack_overflow();
+    // }
+    // stack_overflow();
+    // ===============================================
 
     // Only run while testing
     #[cfg(test)]
