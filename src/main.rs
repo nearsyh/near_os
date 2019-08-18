@@ -44,10 +44,25 @@ pub extern "C" fn _start() -> ! {
     // ===============================================
 
     // ===============================================
-    // Trigger a page fault
+    // Trigger a page fault - 1
     // unsafe {
         // *(0xdeadbeef as *mut u64) = 42;
     // }
+    // ===============================================
+
+    // ===============================================
+    // Trigger a page fault - 2
+    // let ptr = 0xdeadbeaf as *mut u32;
+    // unsafe { *ptr = 42; }
+    // ===============================================
+
+    // ===============================================
+    // Trigger a page fault - 3
+    // let ptr = 0x203272 as *mut u32;
+    // unsafe { let x = *ptr; }
+    // println!("read worked");
+    // unsafe { *ptr = 42; }
+    // println!("write worked");
     // ===============================================
 
     // ===============================================
@@ -57,8 +72,6 @@ pub extern "C" fn _start() -> ! {
     // }
     // stack_overflow();
     // ===============================================
-
-    println!("Not Crash");
 
     // Only run while testing
     #[cfg(test)]
@@ -72,5 +85,13 @@ pub extern "C" fn _start() -> ! {
         // ==============================================
     // }
 
+    // ================================================
+    use x86_64::registers::control::Cr3;
+
+    let (level_4_page_table, _) = Cr3::read();
+    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+    // ================================================
+
+    println!("Not Crash");
     near_os::hlt_loop();
 }
