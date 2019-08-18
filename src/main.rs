@@ -34,6 +34,12 @@ pub extern "C" fn _start() -> ! {
     // _start is just a name convention
     println!("Hello World{}", "!");
 
+    // Initialize our OS
+    near_os::init();
+
+    // Trigger a breakpoint exception
+    x86_64::instructions::interrupts::int3();
+
     // Only run while testing
     #[cfg(test)]
     test_main(); // This function is auto-generated

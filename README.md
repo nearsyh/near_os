@@ -73,3 +73,36 @@ Current we have two kinds of tests: unit tests and integration tests. Unit tests
     "features": "-mmx,-sse,+soft-float"
 }
 ```
+
+# CPU Exceptions
+There about 20 different CPU exceptions. We need to have exception handlers for them. The most important exceptions are:
+
+* Page Fault: Caused by illegal memory access.
+* Invalid Opcode
+* General Protection Fault: Caused by access violations, e.g. run privileged instructions in user level.
+* Double Fault: Caused by exception happens in exception handler.
+* Triple Fault: Caused by exception happens in double fault handler. Most processors don't handle it but just reboot.
+
+## Interrupt Descriptor Table (IDT)
+Table for looking up handler functions by exceptions. Each entry's size is 16 bytes. The entry format is like this:
+
+|   Type    |          Name            |                      Description                      |
+|-----------|--------------------------|-------------------------------------------------------|
+|    u16    | Function Pointer [0:15]  | Lower bits of the pointer to the handler function     |
+|    u16    | GDT Selector             | Selector of a code segment in global descriptor table |
+|    u16    | Options                  | (See below)                                           |
+|    u16    | Function Pointer [16:31] | Middle bits of the pointer to the handler function    |
+|    u32    | Function Pointer [32:63] | Remaining bits of the pointer to the handler function |
+|    u32    | Reserved                 |                                                       |
+
+The option field's format is:
+
+| Bits  |         Name                   |                      Description                      |
+|-------|--------------------------------|-------------------------------------------------------|
+| 0-2   | Interrupt Stack Table Index    | 0: Don't switch stacks, 1-7: Switch to n-th stack in the Interrupt Stack Table when this handler is called |
+| 3-7   | Reserved                       |                                                       |
+| 8     | 0:Interrupt Gate, 1: Trap Gate | Interrupts are disabled is this bit is 0              |
+| 9-11  | Must be one                    |                                                       |
+| 12    | Must be zero                   |                                                       |
+| 13-14 | Descriptor Privilege Level     | Minimal privilege level required to call this handler |
+| 15    | Present                        |                                                       |
