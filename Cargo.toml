@@ -13,7 +13,7 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
-bootloader = "0.6.4"
+bootloader = { version = "0.6.4", features = ["map_physical_memory"]}
 volatile = "0.2.3" # Make the buffer write volatile to avoid bad optimization
 spin = "0.4.9"
 x86_64 = "0.7.0" # Send instructions to the isa-debug-exit port

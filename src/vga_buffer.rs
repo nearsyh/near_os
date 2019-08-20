@@ -121,6 +121,8 @@ lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
+        // This works because 0xb8000's physical address is same
+        // as virtual address
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
 }

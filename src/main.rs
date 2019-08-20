@@ -29,8 +29,13 @@ fn panic(info: &PanicInfo) -> ! {
     near_os::test_panic_handler(info)
 }
 
-#[no_mangle]    // Disable name mangling so that the function name is used
-pub extern "C" fn _start() -> ! {
+use bootloader::{BootInfo, entry_point};
+
+// Make sure the entry point has the write argument type
+// It defines the real low-level _start function
+entry_point!(kernel_main);
+
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
     // extern "C" tells the compiler to use C calling convention
     // _start is just a name convention
     println!("Hello World{}", "!");
@@ -38,40 +43,20 @@ pub extern "C" fn _start() -> ! {
     // Initialize our OS
     near_os::init();
 
-    // ===============================================
-    // Trigger a breakpoint exception
-    // x86_64::instructions::interrupts::int3();
-    // ===============================================
+    use near_os::memory;
+    use x86_64::{VirtAddr, structures::paging::Page};
 
-    // ===============================================
-    // Trigger a page fault - 1
-    // unsafe {
-        // *(0xdeadbeef as *mut u64) = 42;
-    // }
-    // ===============================================
+    let mut mapper = unsafe { memory::init(boot_info.physical_memory_offset) };
+    let mut frame_allocator = unsafe {
+        memory::BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
 
-    // ===============================================
-    // Trigger a page fault - 2
-    // let ptr = 0xdeadbeaf as *mut u32;
-    // unsafe { *ptr = 42; }
-    // ===============================================
+    // map a previously unmapped page
+    let page = Page::containing_address(VirtAddr::new(0x1000));
+    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
 
-    // ===============================================
-    // Trigger a page fault - 3
-    // let ptr = 0x203272 as *mut u32;
-    // unsafe { let x = *ptr; }
-    // println!("read worked");
-    // unsafe { *ptr = 42; }
-    // println!("write worked");
-    // ===============================================
-
-    // ===============================================
-    // Trigger a stack overflow
-    // fn stack_overflow() {
-        // stack_overflow();
-    // }
-    // stack_overflow();
-    // ===============================================
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e)};
 
     // Only run while testing
     #[cfg(test)]
@@ -84,13 +69,6 @@ pub extern "C" fn _start() -> ! {
         // print!("-");
         // ==============================================
     // }
-
-    // ================================================
-    use x86_64::registers::control::Cr3;
-
-    let (level_4_page_table, _) = Cr3::read();
-    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
-    // ================================================
 
     println!("Not Crash");
     near_os::hlt_loop();
