@@ -11,6 +11,10 @@
 // Enable x86_interrupt calling convention
 #![feature(abi_x86_interrupt)]
 
+#![feature(alloc_error_handler)]
+
+extern crate alloc;
+
 // Make print and serial_print available
 // pub makes the modules available from outside
 pub mod serial;
@@ -18,6 +22,18 @@ pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod allocator;
+
+use linked_list_allocator::LockedHeap;
+
+#[global_allocator]
+static ALLOCATOR: LockedHeap = LockedHeap::empty();
+//static ALLOCATOR: allocator::Dummy = allocator::Dummy;
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout)
+}
 
 pub fn init() {
     // Initialize the GDT
